@@ -260,7 +260,7 @@ function App() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery && setShowResults(searchResults.length > 0)}
               />
-              <kbd className="flex cursor-pointer items-center gap-0.5 rounded-md bg-white/6 px-2 py-1 text-xs text-zinc-500 transition hover:bg-white/10" onClick={() => inputRef.current?.focus()}>⌘K</kbd>
+              <kbd className="flex cursor-pointer items-center gap-0.5 rounded-md bg-white/6 px-2 py-1 text-xs text-zinc-500 transition hover:bg-white/10" onClick={() => inputRef.current?.focus()}>(Ctrl/⌘) + K</kbd>
             </div>
             {showResults && (
               <div className="search-dropdown">

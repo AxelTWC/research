@@ -16,9 +16,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 const searchIndex = [
   { id: "featured", title: "Custom Chunking & Reranking Pipeline", keywords: "Parent Child Chunking Adaptive Chunking Metadata PCC AC MD CustomAlgo Reranker BGE rerank outperform NeurIPS report Fujifilm internship", category: "Spotlight" },
-  { id: "papers", title: "ResearchAllRAGEngines Survey", keywords: "RAG engines comparison research survey architectures", category: "Archive" },
-  { id: "triviaqa", title: "TriviaQA RAG Benchmark", keywords: "TriviaQA benchmark evaluation RAG retrieval strategies pizza heatmap visualizations", category: "Archive" },
-  { id: "haystack", title: "HayStack vs LightRAG", keywords: "HayStack LightRAG comparison throughput latency retrieval deployment", category: "Archive" },
+  { id: "papers", title: "ResearchAllRAGEngines Survey", keywords: "RAG engines comparison research survey architectures", category: "Archive", href: "/research/Reports/ResearchAllRAGEngines.html" },
+  { id: "triviaqa", title: "TriviaQA RAG Benchmark", keywords: "TriviaQA benchmark evaluation RAG retrieval strategies pizza heatmap visualizations", category: "Archive", href: "/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" },
+  { id: "haystack", title: "HayStack vs LightRAG", keywords: "HayStack LightRAG comparison throughput latency retrieval deployment", category: "Archive", href: "/research/Reports/HayStackVsLightRAG.pdf" },
   { id: "portfolio", title: "Back to Portfolio", keywords: "main site axeltang.me home", category: "Link", href: "https://axeltang.me" },
 ]
 
@@ -31,11 +31,6 @@ const spotlightLinks = [
   {
     label: '📊 Interactive Ranking Visualization',
     href: '/research/Reports/CustomAlgo_Reranker.html',
-    external: true,
-  },
-  {
-    label: '📁 OCR RAG System — Presentation',
-    href: '/research/Reports/OCR%20RAG%20Retrieval%20System.pdf',
     external: true,
   },
 ]
@@ -218,7 +213,6 @@ function App() {
 
           <nav className={`${mobileNavOpen ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col gap-1 border-b border-white/6 bg-[#0a0a0b] p-4 md:relative md:flex md:flex-row md:items-center md:gap-1 md:border-0 md:bg-transparent md:p-0`}>
             <a href="#featured" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Spotlight</a>
-            <a href="#track" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Track</a>
             <a href="#journal" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Journal</a>
             <a href="https://axeltang.me" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Portfolio</a>
           </nav>
@@ -366,6 +360,8 @@ function App() {
               <a href="/research/Reports/LLMWikiResearch.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki Research</a>
               <span className="text-xs text-zinc-600">·</span>
               <a href="/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">TriviaQA RAG</a>
+              <span className="text-xs text-zinc-600">·</span>
+              <a href="/research/Reports/OCR%20RAG%20Retrieval%20System.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">OCR RAG Presentation</a>
             </div>
           </div>
         </section>

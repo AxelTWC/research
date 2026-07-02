@@ -1,13 +1,17 @@
-# React + Vite
+# Research Hub — Axel Tang
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Research papers, reports, and interactive visualizations from AI internship work at Fujifilm APAC.
 
-Currently, two official plugins are available:
+## 🚀 Deploy
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+After making changes, deploy with:
 
-## React Compiler
+```bash
+cd ~/Desktop/PersonalWebsite/axeltwc.github.io
+bash deploy.sh
+```
+
+This builds the research hub, combines it with the main portfolio, and deploys to `axeltang.me/research/`.
 
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 

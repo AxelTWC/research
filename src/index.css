@@ -2,15 +2,17 @@
 
 @theme {
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --color-bg-primary: #0c0c0e;
-  --color-bg-card: #151518;
-  --color-bg-card-alt: #18181c;
-  --color-bg-nav: rgba(12, 12, 14, 0.88);
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #a0a0a8;
-  --color-text-muted: #6b6b72;
-  --color-border-default: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-bg-primary: var(--c-bg);
+  --color-bg-card: var(--c-bg-card);
+  --color-bg-card-alt: var(--c-bg-card-alt);
+  --color-bg-nav: var(--c-bg-nav);
+  --color-text-primary: var(--c-text);
+  --color-text-secondary: var(--c-text-secondary);
+  --color-text-muted: var(--c-text-muted);
+  --color-border-default: var(--c-border);
+  --color-border-hover: var(--c-border-hover);
+  --color-overlay: var(--c-overlay);
+  --color-overlay-hover: var(--c-overlay-hover);
   --color-accent-blue: #3b82f6;
   --color-accent-cyan: #06b6d4;
   --color-accent-purple: #a855f7;
@@ -21,6 +23,35 @@
   --color-accent-violet: #8b5cf6;
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.25);
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+:root {
+  --c-bg: #0c0c0e;
+  --c-bg-card: #151518;
+  --c-bg-card-alt: #18181c;
+  --c-bg-nav: rgba(12, 12, 14, 0.88);
+  --c-text: #f0f0f0;
+  --c-text-secondary: #a0a0a8;
+  --c-text-muted: #6b6b72;
+  --c-border: rgba(255, 255, 255, 0.06);
+  --c-border-hover: rgba(255, 255, 255, 0.12);
+  --c-overlay: rgba(255, 255, 255, 0.1);
+  --c-overlay-hover: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --c-bg: #f3f4f6;
+  --c-bg-card: #ffffff;
+  --c-bg-card-alt: #f9fafb;
+  --c-bg-nav: rgba(243, 244, 246, 0.9);
+  --c-text: #111827;
+  --c-text-secondary: #4b5563;
+  --c-text-muted: #9ca3af;
+  --c-border: rgba(0, 0, 0, 0.08);
+  --c-border-hover: rgba(0, 0, 0, 0.15);
+  --c-overlay: rgba(0, 0, 0, 0.06);
+  --c-overlay-hover: rgba(0, 0, 0, 0.1);
 }
 
 :root {
@@ -234,4 +265,84 @@ a {
   border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ========== LIGHT THEME OVERRIDES ========== */
+
+[data-theme="light"] body {
+  background: #f3f4f6;
+}
+
+[data-theme="light"] #root::before,
+[data-theme="light"] #root::after {
+  opacity: 0;
+}
+
+[data-theme="light"] .hero-orb-1 {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+[data-theme="light"] .hero-orb-2 {
+  background: rgba(168, 85, 247, 0.10);
+}
+
+[data-theme="light"] .hero-orb-3 {
+  background: rgba(6, 182, 212, 0.08);
+}
+
+[data-theme="light"] .hero-grid {
+  opacity: 0.03;
+}
+
+[data-theme="light"] .search-dropdown {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .search-result-item {
+  color: #111827;
+}
+
+[data-theme="light"] .search-result-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .search-result-item:not(:last-child) {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .search-result-cat,
+[data-theme="light"] .search-result-badge {
+  color: #9ca3af;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--c-border-hover);
+  color: var(--c-text);
+  background: var(--c-overlay);
 }

@@ -11,6 +11,8 @@ import {
   Search,
   Zap,
   ChevronRight,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
@@ -116,8 +118,8 @@ const journalNotes = [
 function Button({ href, label, external = false, variant = 'primary' }) {
   const base = 'inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200'
   const styles = variant === 'primary'
-    ? 'bg-white/10 text-white hover:bg-white/16'
-    : 'border border-white/8 text-zinc-400 hover:text-white hover:border-white/16'
+    ? 'bg-overlay text-text-primary hover:bg-overlay-hover'
+    : 'border border-border-default text-text-secondary hover:text-text-primary hover:border-border-hover'
 
   return (
     <a
@@ -139,6 +141,15 @@ function App() {
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef(null)
   const inputRef = useRef(null)
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
 
   const performSearch = useCallback((query) => {
     const q = query.toLowerCase().trim()
@@ -197,24 +208,33 @@ function App() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-zinc-300">
+    <div className="min-h-screen bg-bg-primary text-text-primary">
 
       {/* ========== NAV ========== */}
-      <header className="sticky top-0 z-20 border-b border-white/6 bg-[rgba(10,10,11,0.85)] backdrop-blur-2xl">
+      <header className="sticky top-0 z-20 border-b border-border-default bg-bg-nav backdrop-blur-2xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-8">
           <a href="#top" className="flex items-center gap-2">
-            <span className="text-sm font-bold text-white">Axel Tang</span>
-            <span className="hidden text-sm text-zinc-500 sm:inline">· Research &amp; Insights</span>
+          <span className="text-sm font-bold text-text-primary">Axel Tang</span>
+          <span className="hidden text-sm text-text-muted sm:inline">· Research &amp; Insights</span>
           </a>
 
-          <button className="block text-white md:hidden" onClick={() => setMobileNavOpen((p) => !p)}>
-            ☰
-          </button>
+<div className="flex items-center gap-2">
+      <button
+        className="theme-toggle-btn"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      >
+        {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+      </button>
+      <button className="block text-text-primary md:hidden" onClick={() => setMobileNavOpen((p) => !p)}>
+        ☰
+      </button>
+    </div>
 
-          <nav className={`${mobileNavOpen ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col gap-1 border-b border-white/6 bg-[#0a0a0b] p-4 md:relative md:flex md:flex-row md:items-center md:gap-1 md:border-0 md:bg-transparent md:p-0`}>
-            <a href="#featured" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Spotlight</a>
-            <a href="#journal" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Journal</a>
-            <a href="https://axeltang.me" className="rounded-lg px-3 py-2 text-sm text-zinc-500 transition hover:text-white">Portfolio</a>
+          <nav className={`${mobileNavOpen ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col gap-1 border-b border-border-default bg-bg-primary p-4 md:relative md:flex md:flex-row md:items-center md:gap-1 md:border-0 md:bg-transparent md:p-0`}>
+            <a href="#featured" className="rounded-lg px-3 py-2 text-sm text-text-muted transition hover:text-text-primary">Spotlight</a>
+            <a href="#journal" className="rounded-lg px-3 py-2 text-sm text-text-muted transition hover:text-text-primary">Journal</a>
+            <a href="https://axeltang.me" className="rounded-lg px-3 py-2 text-sm text-text-muted transition hover:text-text-primary">Portfolio</a>
           </nav>
         </div>
       </header>
@@ -241,26 +261,26 @@ function App() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0c0c0e]" />
           </div>
           <section className="relative z-10 px-6 py-12 text-center md:px-8 md:py-16">
-            <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <h1 className="text-4xl font-bold tracking-tight text-text-primary md:text-5xl">
               Research &amp; Insights
             </h1>
-            <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-zinc-400">
+            <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-text-secondary">
               A dedicated editorial environment for internship research, technical deep-dives,
               and long-form engineering writing.
             </p>
           <div ref={searchRef} className="mx-auto mt-6 max-w-md relative">
-            <div className="flex items-center gap-3 rounded-xl border border-white/8 bg-[#151518] px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <Search className="size-4 shrink-0 text-zinc-500" />
+            <div className="flex items-center gap-3 rounded-xl border border-border-default bg-bg-card px-4 py-3 shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <Search className="size-4 shrink-0 text-text-muted" />
               <input
                 ref={inputRef}
                 type="text"
-                className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-500"
+                className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-muted"
                 placeholder="Search research..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchQuery && setShowResults(searchResults.length > 0)}
               />
-              <kbd className="flex cursor-pointer items-center gap-0.5 rounded-md bg-white/6 px-2 py-1 text-xs text-zinc-500 transition hover:bg-white/10" onClick={() => inputRef.current?.focus()}>(Ctrl/⌘) + K</kbd>
+              <kbd className="flex cursor-pointer items-center gap-0.5 rounded-md bg-overlay px-2 py-1 text-xs text-text-muted transition hover:bg-overlay-hover" onClick={() => inputRef.current?.focus()}>Ctrl/⌘ + K</kbd>
             </div>
             {showResults && (
               <div className="search-dropdown">
@@ -285,8 +305,8 @@ function App() {
 
         {/* ========== EXPLORE RESEARCH ========== */}
         <div className="mb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Explore Research</p>
-          <h2 className="text-xl font-bold text-white">How can I help you?</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Explore Research</p>
+          <h2 className="text-xl font-bold text-text-primary">How can I help you?</h2>
         </div>
 
         <div className="mb-12 grid gap-4 md:grid-cols-3">
@@ -296,13 +316,13 @@ function App() {
               <a
                 key={card.title}
                 href={card.href}
-                className={`reveal-card translate-y-4 rounded-2xl border border-white/6 bg-[#151518] p-6 opacity-0 transition-all duration-500 hover:-translate-y-1 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] ${card.accent}`}
+                className={`reveal-card translate-y-4 rounded-2xl border border-border-default bg-bg-card p-6 opacity-0 transition-all duration-500 hover:-translate-y-1 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] ${card.accent}`}
               >
                 <div className={`mb-4 flex size-10 items-center justify-center rounded-xl ${card.iconBg}`}>
                   <Icon className="size-5" />
                 </div>
-                <h3 className="text-base font-semibold text-white">{card.title}</h3>
-                <p className="mt-1.5 text-sm leading-6 text-zinc-400">{card.desc}</p>
+                <h3 className="text-base font-semibold text-text-primary">{card.title}</h3>
+                <p className="mt-1.5 text-sm leading-6 text-text-secondary">{card.desc}</p>
               </a>
             )
           })}
@@ -313,7 +333,7 @@ function App() {
           <div className="flex flex-col items-start gap-3 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/8 to-purple-500/8 px-6 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.2)] md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
               <Zap className="size-5 shrink-0 text-indigo-400" />
-              <p className="text-sm text-white">
+              <p className="text-sm text-text-primary">
                 <strong>AI Internship Spotlight:</strong> Custom Chunking Pipeline beats BGE Rerank — NeurIPS report + interactive viz
               </p>
             </div>
@@ -325,23 +345,23 @@ function App() {
 
         {/* ========== FEATURED SPOTLIGHT ========== */}
         <section id="featured" className="reveal-card mb-12 translate-y-4 opacity-0 transition-all duration-500">
-          <div className="rounded-2xl border border-blue-500/20 bg-[#151518] p-7 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] md:p-9">
+            <div className="rounded-2xl border border-blue-500/20 bg-bg-card p-7 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] md:p-9">
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-400">
               <FileText className="size-4" />
               AI Internship — Fujifilm APAC
             </div>
-            <h2 className="max-w-2xl text-3xl font-bold tracking-tight text-white md:text-4xl">
+            <h2 className="max-w-2xl text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
               Custom Chunking &amp; Reranking Pipeline — Beats BGE Rerank
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-8 text-zinc-400">
-              <strong className="text-zinc-200">The challenge:</strong> Tasked to improve an existing enterprise RAG platform with a custom <strong className="text-zinc-200">Haystack</strong>-based pipeline using custom chunking methods — and the reranking algorithm came next.
+            <p className="mt-4 max-w-2xl text-base leading-8 text-text-secondary">
+              <strong className="text-text-primary">The challenge:</strong> Tasked to improve an existing enterprise RAG platform with a custom <strong className="text-text-primary">Haystack</strong>-based pipeline using custom chunking methods — and the reranking algorithm came next.
               <br /><br />
-              <strong className="text-zinc-200">The solution:</strong> A custom chunking strategy combining <strong className="text-zinc-200">Parent-Child Chunking</strong> (4 children per parent, 500-word splits, adaptive boundaries),
-              <strong className="text-zinc-200">Adaptive Chunking</strong> (table-aware splitting, metadata injection),
-              and a <strong className="text-zinc-200">hybrid reranking formula</strong> (0.70 semantic + 0.15 metadata + 0.15 lexical).
+              <strong className="text-text-primary">The solution:</strong> A custom chunking strategy combining <strong className="text-text-primary">Parent-Child Chunking</strong> (4 children per parent, 500-word splits, adaptive boundaries),
+              <strong className="text-text-primary">Adaptive Chunking</strong> (table-aware splitting, metadata injection),
+              and a <strong className="text-text-primary">hybrid reranking formula</strong> (0.70 semantic + 0.15 metadata + 0.15 lexical).
               <br /><br />
-              <strong className="text-zinc-200">The result:</strong> Matched <strong className="text-zinc-200">BAAI/bge-reranker-v2-m3</strong> cross-encoder accuracy
-              (Recall@5 = 1.00, MRR = 1.00) while being <strong className="text-zinc-200">25× faster on GPU</strong> (0.015s vs 0.374s per query)
+              <strong className="text-text-primary">The result:</strong> Matched <strong className="text-text-primary">BAAI/bge-reranker-v2-m3</strong> cross-encoder accuracy
+              (Recall@5 = 1.00, MRR = 1.00) while being <strong className="text-text-primary">25× faster on GPU</strong> (0.015s vs 0.374s per query)
               and ~1343× faster than cross-encoder on CPU. The NeurIPS-formatted report details the methodology;
               the interactive HTML visualization lets you explore the benchmark results live.</p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -349,27 +369,27 @@ function App() {
                 <Button key={link.label} href={link.href} label={link.label} external={link.external} variant={idx === 0 ? 'primary' : 'secondary'} />
               ))}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-white/6 pt-4">
-              <span className="text-xs text-zinc-500">Also available:</span>
-              <a href="/research/Reports/ResearchAllRAGEngines.html" className="text-xs text-zinc-400 underline transition hover:text-white">ResearchAllRAGEngines</a>
-              <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/HayStackVsLightRAG.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">HayStack vs LightRAG</a>
-              <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/LLMWIkiDeepEval.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki DeepEval</a>
-              <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/LLMWikiResearch.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki Research</a>
-              <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">TriviaQA RAG</a>
-              <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/OCR%20RAG%20Retrieval%20System.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">OCR RAG Presentation</a>
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-border-default pt-4">
+              <span className="text-xs text-text-muted">Also available:</span>
+              <a href="/research/Reports/ResearchAllRAGEngines.html" className="text-xs text-text-secondary underline transition hover:text-text-primary">ResearchAllRAGEngines</a>
+              <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/HayStackVsLightRAG.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">HayStack vs LightRAG</a>
+              <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/LLMWIkiDeepEval.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">LLM Wiki DeepEval</a>
+              <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/LLMWikiResearch.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">LLM Wiki Research</a>
+              <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">TriviaQA RAG</a>
+              <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/OCR%20RAG%20Retrieval%20System.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">OCR RAG Presentation</a>
             </div>
           </div>
         </section>
 
         {/* ========== RESEARCH ARCHIVE (4 cards) ========== */}
         <div className="mb-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Research Archive</p>
-          <h2 className="text-xl font-bold text-white">Explore the collection</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Research Archive</p>
+          <h2 className="text-xl font-bold text-text-primary">Explore the collection</h2>
         </div>
 
         <div className="mb-12 grid gap-3 md:grid-cols-4">
@@ -382,45 +402,55 @@ function App() {
               <Tag
                 key={card.title}
                 {...tagProps}
-                className={`reveal-card translate-y-4 rounded-xl border border-white/6 bg-[#151518] p-5 text-center opacity-0 transition-all duration-500 hover:-translate-y-1 shadow-[0_2px_8px_rgba(0,0,0,0.2),0_4px_20px_rgba(0,0,0,0.15)] ${card.accent}`}
+                className={`reveal-card translate-y-4 rounded-xl border border-border-default bg-bg-card p-5 text-center opacity-0 transition-all duration-500 hover:-translate-y-1 shadow-[0_2px_8px_rgba(0,0,0,0.2),0_4px_20px_rgba(0,0,0,0.15)] ${card.accent}`}
               >
                 <div className={`mx-auto mb-3 flex size-9 items-center justify-center rounded-lg ${card.iconBg}`}>
                   <Icon className="size-4" />
                 </div>
-                <h4 className="text-sm font-semibold text-white">{card.title}</h4>
-                <p className="mt-1 text-xs leading-5 text-zinc-500">{card.desc}</p>
+                <h4 className="text-sm font-semibold text-text-primary">{card.title}</h4>
+                <p className="mt-1 text-xs leading-5 text-text-muted">{card.desc}</p>
               </Tag>
             )
           })}
         </div>
 
-        {/* ========== FIELD JOURNAL ========== */}
+{/* ========== FIELD JOURNAL ========== */}
         <section id="journal" className="mb-12">
           <div className="mb-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Field Journal</p>
-            <h2 className="text-xl font-bold text-white">Signal Notes</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Field Journal</p>
+            <h2 className="text-xl font-bold text-text-primary">Signal Notes</h2>
           </div>
 
           <div className="grid gap-4 md:grid-cols-1">
-            {journalNotes.map((note) => (
-              <div key={note.title} className="reveal-card translate-y-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/8 to-purple-500/8 p-6 opacity-0 transition-all duration-500 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)]">
-                {note.featured && (
-                  <span className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-indigo-400">
-                    <Zap className="size-3" />
-                    Featured
-                  </span>
-                )}
-                <h3 className="text-base font-semibold text-white">{note.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">{note.text}</p>
-              </div>
-            ))}
+            <div className="reveal-card translate-y-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/8 to-purple-500/8 p-6 opacity-0 transition-all duration-500 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)]">
+              <span className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-indigo-400">
+                <Zap className="size-3" />
+                Featured Breakthrough
+              </span>
+              <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                ⚡ Cracking the RAG Latency Code: Shifting Cross-Encoder Precision to Pipeline Architecture
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                In enterprise RAG, we are taught to accept a painful compromise: if you want pinpoint precision, you have to wait for it. 🛑 Benchmarking <code className="text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded text-xs">BAAI/bge-reranker-v2-m3</code> gave me a flawless Recall@5 and MRR of 1.00, but it imposed a steep 0.374s/query latency tax on GPU—dead on arrival for high-throughput platforms. 
+                <br /><br />
+                Refusing the hardware tax, I engineered a custom <strong>Haystack</strong> pipeline that shifts the heavy lifting from brute-force compute to smart design:
+                <br /><br />
+                🧩 <strong className="text-text-primary">Adaptive Parent-Child Chunking:</strong> 500-word parents, 4 children, and smart boundaries to lock in deep context.<br />
+                🏷️ <strong className="text-text-primary">Metadata Injection:</strong> Injecting rich structural metadata directly into the vector space.<br />
+                🎛️ <strong className="text-text-primary">Tri-Hybrid Scoring Formula:</strong> A custom heuristic balancing <code className="text-purple-300">0.70 Semantic + 0.15 Metadata + 0.15 Lexical</code>.
+                <br /><br />
+                The results were staggering. I maintained absolute parity on accuracy (Recall@5 and MRR stayed at a perfect 1.00) while dropping GPU latency to a blistering 0.015s.
+                <br /><br />
+              🔥 <strong className="text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-md shadow-sm">25x faster with a fraction of the cost, how amazing is that!</strong>
+              </p>
+            </div>
           </div>
         </section>
 
       </main>
 
       {/* ========== FOOTER ========== */}
-      <footer className="border-t border-white/6 py-6 text-center text-xs text-zinc-600">
+      <footer className="border-t border-border-default py-6 text-center text-xs text-text-muted">
         &copy; {new Date().getFullYear()} Axel Tang. All rights reserved.
       </footer>
     </div>

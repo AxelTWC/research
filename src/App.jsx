@@ -48,17 +48,17 @@ const categoryCards = [
     icon: BriefcaseBusiness,
     accent: 'border-purple-500/50 hover:border-purple-500 shadow-purple-500/15',
     iconBg: 'bg-purple-500/15 text-purple-400',
-    title: 'OCR RAG Retrieval System',
-    desc: 'End-to-end OCR-powered RAG retrieval system — presentation deck covering architecture, pipelines, and results.',
-    href: '#featured',
+    title: 'More Research Deliverables',
+    desc: 'I will be adding more research deliverables here over time — stay tuned for new reports, visualizations, and technical essays.',
+    href: '#journal',
   },
   {
     icon: BrainCircuit,
     accent: 'border-emerald-500/50 hover:border-emerald-500 shadow-emerald-500/15',
     iconBg: 'bg-emerald-500/15 text-emerald-400',
-    title: 'ResearchAllRAGEngines',
+    title: 'Research Different RAG Engines',
     desc: 'Comparative analysis across multiple RAG engine implementations — research survey of retrieval techniques.',
-    href: '#featured',
+    href: '/research/Reports/ResearchAllRAGEngines.html',
   },
 ]
 

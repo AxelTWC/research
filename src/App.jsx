@@ -25,17 +25,17 @@ const searchIndex = [
 const spotlightLinks = [
   {
     label: '📄 NeurIPS-Formatted Report',
-    href: '/research/Reports/PCC_AC_MD.pdf',
+    href: '/Reports/PCC_AC_MD.pdf',
     external: true,
   },
   {
     label: '📊 Interactive Ranking Visualization',
-    href: '/research/Reports/CustomAlgo_Reranker.html',
+    href: '/Reports/CustomAlgo_Reranker.html',
     external: true,
   },
   {
     label: '📁 OCR RAG System — Presentation',
-    href: '/research/Reports/OCR%20RAG%20Retrieval%20System.pdf',
+    href: '/Reports/OCR%20RAG%20Retrieval%20System.pdf',
     external: true,
   },
 ]
@@ -74,7 +74,7 @@ const archiveCards = [
     iconBg: 'bg-blue-500/15 text-blue-400',
     title: 'Custom Chunking; Reranker (NeurIPS)',
     desc: 'NeurIPS-formatted report on Parent-Child Chunking, Adaptive Chunking, and Metadata — outperforms BGE rerank models.',
-    href: '/research/Reports/PCC_AC_MD.pdf',
+    href: '/Reports/PCC_AC_MD.pdf',
   },
   {
     icon: FlaskConical,
@@ -82,7 +82,7 @@ const archiveCards = [
     iconBg: 'bg-cyan-500/15 text-cyan-400',
     title: 'ResearchAllRAGEngines',
     desc: 'Comparative survey of multiple RAG engine implementations — retrieval strategies, performance trade-offs, and architecture insights.',
-    href: '/research/Reports/ResearchAllRAGEngines.html',
+    href: '/Reports/ResearchAllRAGEngines.html',
   },
   {
     icon: Sparkles,
@@ -90,7 +90,7 @@ const archiveCards = [
     iconBg: 'bg-purple-500/15 text-purple-400',
     title: 'HayStack vs LightRAG',
     desc: 'Head-to-head comparison of HayStack and LightRAG frameworks — throughput, latency, retrieval quality, and deployment considerations.',
-    href: '/research/Reports/HayStackVsLightRAG.pdf',
+    href: '/Reports/HayStackVsLightRAG.pdf',
   },
   {
     icon: BookOpen,
@@ -98,7 +98,7 @@ const archiveCards = [
     iconBg: 'bg-amber-500/15 text-amber-400',
     title: 'Pizza — Metrics Visualized',
     desc: 'A graphic design explaining retrieval evaluation metrics visually — precision, recall, F1, and ranking quality made intuitive.',
-    href: '/research/Reports/Pizza.png',
+    href: '/Reports/Pizza.png',
   },
   {
     icon: BookOpen,
@@ -106,7 +106,7 @@ const archiveCards = [
     iconBg: 'bg-pink-500/15 text-pink-400',
     title: 'LLM Wiki DeepEval',
     desc: 'Deep evaluation of LLM-powered retrieval systems — analysis of inference quality, prompt sensitivity, and benchmark performance across configurations.',
-    href: '/research/Reports/LLMWIkiDeepEval.pdf',
+    href: '/Reports/LLMWIkiDeepEval.pdf',
   },
 ]
 
@@ -357,15 +357,15 @@ function App() {
             </div>
             <div className="mt-4 flex flex-wrap gap-2 border-t border-white/6 pt-4">
               <span className="text-xs text-zinc-500">Also available:</span>
-              <a href="/research/Reports/ResearchAllRAGEngines.html" className="text-xs text-zinc-400 underline transition hover:text-white">ResearchAllRAGEngines</a>
+              <a href="/Reports/ResearchAllRAGEngines.html" className="text-xs text-zinc-400 underline transition hover:text-white">ResearchAllRAGEngines</a>
               <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/HayStackVsLightRAG.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">HayStack vs LightRAG</a>
+              <a href="/Reports/HayStackVsLightRAG.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">HayStack vs LightRAG</a>
               <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/LLMWIkiDeepEval.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki DeepEval</a>
+              <a href="/Reports/LLMWIkiDeepEval.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki DeepEval</a>
               <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/LLMWikiResearch.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki Research</a>
+              <a href="/Reports/LLMWikiResearch.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">LLM Wiki Research</a>
               <span className="text-xs text-zinc-600">·</span>
-              <a href="/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">TriviaQA RAG</a>
+              <a href="/Reports/Triviaqa%20Rag%20Final%20Report.pdf" className="text-xs text-zinc-400 underline transition hover:text-white">TriviaQA RAG</a>
             </div>
           </div>
         </section>

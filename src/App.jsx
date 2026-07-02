@@ -441,7 +441,7 @@ function App() {
                 <br /><br />
                 The results were staggering. I maintained absolute parity on accuracy (Recall@5 and MRR stayed at a perfect 1.00) while dropping GPU latency to a blistering 0.015s.
                 <br /><br />
-              🔥 <strong className="text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-md shadow-sm">25x faster with a fraction of the cost, how amazing is that!</strong>
+              🔥 <strong className="text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-md shadow-sm">25x faster and a fraction of the cost, how amazing is that!</strong>
               </p>
             </div>
           </div>

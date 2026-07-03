@@ -22,6 +22,7 @@ const searchIndex = [
   { id: "triviaqa", title: "TriviaQA RAG Benchmark", keywords: "TriviaQA benchmark evaluation RAG retrieval strategies pizza heatmap visualizations", category: "Archive", href: "/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" },
   { id: "haystack", title: "HayStack vs LightRAG", keywords: "HayStack LightRAG comparison throughput latency retrieval deployment", category: "Archive", href: "/research/Reports/HayStackVsLightRAG.pdf" },
   { id: "portfolio", title: "Back to Portfolio", keywords: "main site axeltang.me home", category: "Link", href: "https://axeltang.me" },
+  { id: "llmwikitest", title: "LLM Wiki DeepEval 3-Test", keywords: "LLMWiki DeepEval benchmark RAG evaluation TriviaQA multi-run test cycles Answer Relevancy Faithfulness Exact Match F1 TTFT TPS", category: "Archive", href: "/research/Reports/LLMWIkiDeepEval3Test.pdf" },
 ]
 
 const spotlightLinks = [
@@ -104,6 +105,14 @@ const archiveCards = [
     title: 'LLM Wiki DeepEval',
     desc: 'Deep evaluation of LLM-powered retrieval systems — analysis of inference quality, prompt sensitivity, and benchmark performance across configurations.',
     href: '/research/Reports/LLMWIkiDeepEval.pdf',
+  },
+  {
+    icon: FlaskConical,
+    accent: 'border-indigo-500/50 hover:border-indigo-500 shadow-indigo-500/15',
+    iconBg: 'bg-indigo-500/15 text-indigo-400',
+    title: 'LLM Wiki DeepEval 3-Test',
+    desc: 'Multi-run benchmark across 3 comprehensive test cycles — tracking Answer Relevancy, Faithfulness, Exact Match, F1, TTFT, and TPS with progressive refinements.',
+    href: '/research/Reports/LLMWIkiDeepEval3Test.pdf',
   },
 ]
 
@@ -386,7 +395,7 @@ function App() {
           </div>
         </section>
 
-        {/* ========== RESEARCH ARCHIVE (4 cards) ========== */}
+        {/* ========== RESEARCH ARCHIVE (6 cards) ========== */}
         <div className="mb-2">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-text-muted">Research Archive</p>
           <h2 className="text-xl font-bold text-text-primary">Explore the collection</h2>

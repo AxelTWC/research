@@ -119,8 +119,8 @@ const archiveCards = [
 const journalNotes = [
   {
     featured: true,
-    title: 'Custom Haystack Reranker — Beats BGE at 25× Speed',
-    text: 'Tasked to improve an enterprise RAG platform with a custom Haystack pipeline. Built Parent-Child Chunking (4 children/parent, 500-word splits, adaptive boundaries), metadata injection, and a hybrid reranking formula (0.70 semantic + 0.15 metadata + 0.15 lexical). Benchmarked against BAAI/bge-reranker-v2-m3: identical accuracy (Recall@5 = 1.00, MRR = 1.00) but 25× faster on GPU (0.015s vs 0.374s/query) and ~1343× faster than cross-encoder on CPU.',
+    title: 'Custom Reranking Pipeline — Beats BGE at 25× Speed',
+    text: 'Tasked to improve an enterprise RAG platform with a custom pipeline architecture. Built Parent-Child Chunking (4 children/parent, 500-word splits, adaptive boundaries), metadata injection, and a hybrid reranking formula (0.70 semantic + 0.15 metadata + 0.15 lexical). Benchmarked against BAAI/bge-reranker-v2-m3: identical accuracy (Recall@5 = 1.00, MRR = 1.00) but 25× faster on GPU (0.015s vs 0.374s/query) and ~1343× faster than cross-encoder on CPU.',
   },
 ]
 
@@ -354,7 +354,7 @@ function App() {
 
         {/* ========== FEATURED SPOTLIGHT ========== */}
         <section id="featured" className="reveal-card mb-12 translate-y-4 opacity-0 transition-all duration-500">
-            <div className="rounded-2xl border border-blue-500/20 bg-bg-card p-7 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] md:p-9">
+            <div className="spotlight-card rounded-2xl bg-bg-card p-7 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)] md:p-9">
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-400">
               <FileText className="size-4" />
               AI Internship — Fujifilm APAC
@@ -363,7 +363,7 @@ function App() {
               Custom Chunking &amp; Reranking Pipeline — Beats BGE Rerank
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-8 text-text-secondary">
-              <strong className="text-text-primary">The challenge:</strong> Tasked to improve an existing enterprise RAG platform with a custom <strong className="text-text-primary">Haystack</strong>-based pipeline using custom chunking methods — and the reranking algorithm came next.
+              <strong className="text-text-primary">The challenge:</strong> Tasked to improve an existing enterprise RAG platform with a custom <strong className="text-text-primary">pipeline architecture</strong> using advanced chunking methods — and the reranking algorithm came next.
               <br /><br />
               <strong className="text-text-primary">The solution:</strong> A custom chunking strategy combining <strong className="text-text-primary">Parent-Child Chunking</strong> (4 children per parent, 500-word splits, adaptive boundaries),
               <strong className="text-text-primary">Adaptive Chunking</strong> (table-aware splitting, metadata injection),
@@ -442,7 +442,7 @@ function App() {
               <p className="mt-2 text-sm leading-6 text-text-secondary">
                 In enterprise RAG, we are taught to accept a painful compromise: if you want pinpoint precision, you have to wait for it. 🛑 Benchmarking <code className="text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded text-xs">BAAI/bge-reranker-v2-m3</code> gave me a flawless Recall@5 and MRR of 1.00, but it imposed a steep 0.374s/query latency tax on GPU—dead on arrival for high-throughput platforms. 
                 <br /><br />
-                Refusing the hardware tax, I engineered a custom <strong>Haystack</strong> pipeline that shifts the heavy lifting from brute-force compute to smart design:
+                Refusing the hardware tax, I engineered a custom <strong>pipeline architecture</strong> that shifts the heavy lifting from brute-force compute to smart design:
                 <br /><br />
                 🧩 <strong className="text-text-primary">Adaptive Parent-Child Chunking:</strong> 500-word parents, 4 children, and smart boundaries to lock in deep context.<br />
                 🏷️ <strong className="text-text-primary">Metadata Injection:</strong> Injecting rich structural metadata directly into the vector space.<br />

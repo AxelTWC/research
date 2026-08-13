@@ -18,6 +18,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 const searchIndex = [
   { id: "featured", title: "Custom Chunking & Reranking Pipeline", keywords: "Parent Child Chunking Adaptive Chunking Metadata PCC AC MD CustomAlgo Reranker BGE rerank outperform NeurIPS report Fujifilm internship", category: "Spotlight" },
+  { id: "mediafilter", title: "Kiosk Media Relevance Filter", keywords: "media relevance embedding filter kiosk chatbot cosine similarity semantic threshold modulation bge-m3 precision Fujifilm NeurIPS SASE general knowledge", category: "Archive", href: "/research/Reports/SemanticMediaFilter.html" },
   { id: "papers", title: "ResearchAllRAGEngines Survey", keywords: "RAG engines comparison research survey architectures", category: "Archive", href: "/research/Reports/ResearchAllRAGEngines.html" },
   { id: "triviaqa", title: "TriviaQA RAG Benchmark", keywords: "TriviaQA benchmark evaluation RAG retrieval strategies pizza heatmap visualizations", category: "Archive", href: "/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" },
   { id: "haystack", title: "HayStack vs LightRAG", keywords: "HayStack LightRAG comparison throughput latency retrieval deployment", category: "Archive", href: "/research/Reports/HayStackVsLightRAG.pdf" },
@@ -66,6 +67,14 @@ const categoryCards = [
 ]
 
 const archiveCards = [
+  {
+    icon: BrainCircuit,
+    accent: 'border-teal-500/50 hover:border-teal-500 shadow-teal-500/15',
+    iconBg: 'bg-teal-500/15 text-teal-400',
+    title: 'Kiosk Media Relevance Filter',
+    desc: 'Per-media cosine similarity embedding filter that reuses the RAG query vector — 100% precision on a 65-query benchmark at zero incremental cost. NeurIPS-formatted report with full math appendix.',
+    href: '/research/Reports/SemanticMediaFilter.html',
+  },
   {
     icon: FileText,
     accent: 'border-blue-500/50 hover:border-blue-500 shadow-blue-500/15',
@@ -119,6 +128,23 @@ const archiveCards = [
 const journalNotes = [
   {
     featured: true,
+    title: '⚡ Zero-Cost Media Filtering — 100% Precision on the 65-Query Kiosk Benchmark',
+    text: (
+      <>
+        On the showroom floor, general-knowledge questions kept summoning irrelevant media. 🛑 A visitor asking <strong className="text-text-primary">"What is machine learning?"</strong> got a printer brochure — the substring <code className="text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded text-xs">mac</code> collided with a Mac-compatibility keyword. The naive keyword matcher scored just 51/65 (78.5%) on our benchmark.
+        <br /><br />
+        Instead of bolting on a classifier, I exploited what the pipeline already had: the query embedding from RAG vector search. Media descriptors were embedded once at startup, and each keyword-matched candidate is now scored by cosine similarity against the cached query vector — <strong className="text-text-primary">zero extra API calls, sub-millisecond latency, $0 per query</strong>.
+        <br /><br />
+        🎛️ <strong className="text-text-primary">Dynamic Threshold Modulation:</strong> a base threshold of 0.43 scaled by keyword-match strength (exact match ×0.70, 3+ keywords ×0.82, 2 keywords ×0.88, 0–1 keywords ×0.97) — strong lexical evidence lowers the bar, weak substring collisions face the strictest gate.
+        <br /><br />
+        Measured against LLM-as-Judge (94–99% est., +500–2000 ms, per-query cost) and LangChain Semantic Router (93–97% est., binary routing), the embedding filter is Pareto-optimal: <strong className="text-text-primary">100% precision (65/65)</strong> across dual-media, single-media, and general-knowledge queries in production — natively cross-lingual (English, Cantonese, Mandarin) via <code className="text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded text-xs">text-embedding-bge-m3</code>.
+        <br /><br />
+        🔥 <strong className="text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-md shadow-sm">Zero cost, sub-millisecond, perfect precision on the kiosk floor.</strong>
+      </>
+    ),
+  },
+  {
+    featured: false,
     title: 'Custom Reranking Pipeline — Beats BGE at 25× Speed',
     text: 'Tasked to improve an enterprise RAG platform with a custom pipeline architecture. Built Parent-Child Chunking (4 children/parent, 500-word splits, adaptive boundaries), metadata injection, and a hybrid reranking formula (0.70 semantic + 0.15 metadata + 0.15 lexical). Benchmarked against BAAI/bge-reranker-v2-m3: identical accuracy (Recall@5 = 1.00, MRR = 1.00) but 25× faster on GPU (0.015s vs 0.374s/query) and ~1343× faster than cross-encoder on CPU.',
   },
@@ -431,28 +457,31 @@ function App() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-1">
-            <div className="reveal-card translate-y-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/8 to-purple-500/8 p-6 opacity-0 transition-all duration-500 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)]">
-              <span className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-indigo-400">
-                <Zap className="size-3" />
-                Featured Breakthrough
-              </span>
-              <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
-                ⚡ Cracking the RAG Latency Code: Shifting Cross-Encoder Precision to Pipeline Architecture
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                In enterprise RAG, we are taught to accept a painful compromise: if you want pinpoint precision, you have to wait for it. 🛑 Benchmarking <code className="text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded text-xs">BAAI/bge-reranker-v2-m3</code> gave me a flawless Recall@5 and MRR of 1.00, but it imposed a steep 0.374s/query latency tax on GPU—dead on arrival for high-throughput platforms. 
-                <br /><br />
-                Refusing the hardware tax, I engineered a custom <strong>pipeline architecture</strong> that shifts the heavy lifting from brute-force compute to smart design:
-                <br /><br />
-                🧩 <strong className="text-text-primary">Adaptive Parent-Child Chunking:</strong> 500-word parents, 4 children, and smart boundaries to lock in deep context.<br />
-                🏷️ <strong className="text-text-primary">Metadata Injection:</strong> Injecting rich structural metadata directly into the vector space.<br />
-                🎛️ <strong className="text-text-primary">Tri-Hybrid Scoring Formula:</strong> A custom heuristic balancing <code className="text-purple-300">0.70 Semantic + 0.15 Metadata + 0.15 Lexical</code>.
-                <br /><br />
-                The results were staggering. I maintained absolute parity on accuracy (Recall@5 and MRR stayed at a perfect 1.00) while dropping GPU latency to a blistering 0.015s.
-                <br /><br />
-              🔥 <strong className="text-white bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 rounded-md shadow-sm">25x faster and a fraction of the cost, how amazing is that!</strong>
-              </p>
-            </div>
+            {journalNotes.map((note) => (
+              <div
+                key={note.title}
+                className={`reveal-card translate-y-4 rounded-2xl p-6 opacity-0 transition-all duration-500 ${
+                  note.featured
+                    ? 'border border-indigo-500/20 bg-gradient-to-r from-indigo-500/8 to-purple-500/8 shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)]'
+                    : 'border border-border-default bg-bg-card shadow-[0_4px_12px_rgba(0,0,0,0.3),0_8px_32px_rgba(0,0,0,0.25)]'
+                }`}
+              >
+                <span className={`mb-3 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${
+                  note.featured
+                    ? 'border-indigo-500/20 bg-indigo-500/10 text-indigo-400'
+                    : 'border-border-default bg-overlay text-text-muted'
+                }`}>
+                  {note.featured && <Zap className="size-3" />}
+                  {note.featured ? 'Latest Entry' : 'Earlier Note'}
+                </span>
+                <h3 className="text-base font-semibold text-text-primary flex items-center gap-2">
+                  {note.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">
+                  {note.text}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 

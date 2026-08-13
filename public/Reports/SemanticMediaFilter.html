@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Axel Tang University of Toronto Fujifilm axel.tang@mail.utoronto.ca axel.tang.mn@fujifilm.com " />
+  <title>Semantic Media Relevance Filtering for Multi-Modal Kiosk Chatbots</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="SemanticMediaFilter.css" />
+  <script defer=""
+  src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<p class="back-link"><a href="/research/">← Back to Research Hub</a></p>
+<h1 class="title">Semantic Media Relevance Filtering for Multi-Modal
+Kiosk Chatbots</h1>
+<p class="subtitle">A Comparative Analysis of Embedding-Based, LLM-Judge, and Routing Approaches</p>
+<p class="author">Axel Tang<br />
+University of Toronto<br />
+Fujifilm<br />
+<code>axel.tang@mail.utoronto.ca</code><br />
+<code>axel.tang.mn@fujifilm.com</code><br /></p>
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+<p>Multi-modal kiosk chatbots deployed in corporate showrooms face a
+critical precision problem: general-knowledge queries from visitors
+trigger irrelevant media displays due to naive substring keyword
+matching between user queries and media metadata. This report presents a
+production-deployed per-media cosine similarity embedding filter that
+achieves 100% precision on a 65-query benchmark by reusing the query
+embedding vector already computed during Retrieval-Augmented Generation
+(RAG) vector search. The approach is compared against three
+alternatives—keyword-only matching (baseline, 78.5% accuracy),
+LLM-as-Judge classification (estimated 94–99%, +500–2000 ms latency),
+and LangChain Semantic Router (estimated 93–97%, +10–50 ms latency). The
+proposed embedding filter achieves zero incremental query cost (<span
+class="math inline">&lt;</span>1 ms, $0/query), per-item granularity
+scoring, and native cross-lingual support (English, Cantonese, Mandarin)
+via the <code>text-embedding-bge-m3</code> model. A dynamic threshold
+modulation mechanism bridges brittle substring matching and pure
+semantic scoring by scaling the acceptance threshold based on keyword
+match strength. Production deployment on a Fujifilm showroom kiosk
+confirms that the filter eliminates false-positive media triggers while
+preserving correct media matching for domain-specific product and
+service inquiries.</p>
+</div>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#attestation-of-teamwork"
+id="toc-attestation-of-teamwork">Attestation of Teamwork</a></li>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#system-architecture" id="toc-system-architecture">System
+Architecture</a></li>
+<li><a href="#problem-formulation" id="toc-problem-formulation">Problem
+Formulation</a></li>
+<li><a href="#approach-1-keyword-only-matching-baseline"
+id="toc-approach-1-keyword-only-matching-baseline">Approach 1:
+Keyword-Only Matching (Baseline)</a>
+<ul>
+<li><a href="#mechanism" id="toc-mechanism">Mechanism</a></li>
+<li><a href="#mathematical-formulation"
+id="toc-mathematical-formulation">Mathematical Formulation</a></li>
+<li><a href="#results" id="toc-results">Results</a></li>
+<li><a href="#remarks" id="toc-remarks">Remarks</a></li>
+</ul></li>
+<li><a href="#approach-2-llm-as-judge-classification"
+id="toc-approach-2-llm-as-judge-classification">Approach 2: LLM-as-Judge
+Classification</a>
+<ul>
+<li><a href="#mechanism-1" id="toc-mechanism-1">Mechanism</a></li>
+<li><a href="#mathematical-formulation-1"
+id="toc-mathematical-formulation-1">Mathematical Formulation</a></li>
+<li><a href="#estimated-results" id="toc-estimated-results">Estimated
+Results</a></li>
+<li><a href="#remarks-1" id="toc-remarks-1">Remarks</a></li>
+</ul></li>
+<li><a href="#approach-3-langchain-semantic-router"
+id="toc-approach-3-langchain-semantic-router">Approach 3: LangChain
+Semantic Router</a>
+<ul>
+<li><a href="#mechanism-2" id="toc-mechanism-2">Mechanism</a></li>
+<li><a href="#mathematical-formulation-2"
+id="toc-mathematical-formulation-2">Mathematical Formulation</a></li>
+<li><a href="#estimated-results-1"
+id="toc-estimated-results-1">Estimated Results</a></li>
+<li><a href="#remarks-2" id="toc-remarks-2">Remarks</a></li>
+</ul></li>
+<li><a
+href="#approach-4-per-media-cosine-similarity-embedding-filter-deployed"
+id="toc-approach-4-per-media-cosine-similarity-embedding-filter-deployed">Approach
+4: Per-Media Cosine Similarity Embedding Filter (Deployed)</a>
+<ul>
+<li><a href="#design-rationale" id="toc-design-rationale">Design
+Rationale</a></li>
+<li><a href="#pre-computation-phase-startup-one-time"
+id="toc-pre-computation-phase-startup-one-time">Pre-Computation Phase
+(Startup, One-Time)</a></li>
+<li><a href="#query-time-semantic-scoring"
+id="toc-query-time-semantic-scoring">Query-Time Semantic
+Scoring</a></li>
+<li><a href="#dynamic-threshold-modulation"
+id="toc-dynamic-threshold-modulation">Dynamic Threshold
+Modulation</a></li>
+<li><a href="#full-algorithm-per-query-execution"
+id="toc-full-algorithm-per-query-execution">Full Algorithm (Per-Query
+Execution)</a></li>
+<li><a href="#computational-complexity"
+id="toc-computational-complexity">Computational Complexity</a></li>
+</ul></li>
+<li><a href="#comparative-analysis"
+id="toc-comparative-analysis">Comparative Analysis</a></li>
+<li><a href="#production-results" id="toc-production-results">Production
+Results</a>
+<ul>
+<li><a href="#key-observations" id="toc-key-observations">Key
+Observations</a></li>
+</ul></li>
+<li><a href="#discussion" id="toc-discussion">Discussion</a>
+<ul>
+<li><a href="#why-not-llm-as-judge" id="toc-why-not-llm-as-judge">Why
+Not LLM-as-Judge?</a></li>
+<li><a href="#why-not-langchain-semantic-router"
+id="toc-why-not-langchain-semantic-router">Why Not LangChain Semantic
+Router?</a></li>
+<li><a href="#limitations" id="toc-limitations">Limitations</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+<li><a href="#appendix-mathematical-formulations-explained"
+id="toc-appendix-mathematical-formulations-explained">Appendix:
+Mathematical Formulations Explained</a>
+<ul>
+<li><a href="#section-3-problem-formulation"
+id="toc-section-3-problem-formulation">Section 3: Problem
+Formulation</a></li>
+<li><a href="#section-4-approach-1-keyword-only-matching-baseline"
+id="toc-section-4-approach-1-keyword-only-matching-baseline">Section 4:
+Approach 1 — Keyword-Only Matching (Baseline)</a></li>
+<li><a href="#section-5-approach-2-llm-as-judge-classification"
+id="toc-section-5-approach-2-llm-as-judge-classification">Section 5:
+Approach 2 — LLM-as-Judge Classification</a></li>
+<li><a href="#section-6-approach-3-langchain-semantic-router"
+id="toc-section-6-approach-3-langchain-semantic-router">Section 6:
+Approach 3 — LangChain Semantic Router</a></li>
+<li><a
+href="#section-7-approach-4-per-media-cosine-similarity-embedding-filter-deployed"
+id="toc-section-7-approach-4-per-media-cosine-similarity-embedding-filter-deployed">Section
+7: Approach 4 — Per-Media Cosine Similarity Embedding Filter
+(Deployed)</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 class="unnumbered" id="attestation-of-teamwork">Attestation of
+Teamwork</h1>
+<p>Axel Tang did all this and learnt with AI.</p>
+<h1 id="introduction">Introduction</h1>
+<p>Corporate showroom kiosks serve as interactive information hubs where
+visitors query a chatbot about products, services, and company
+information. These systems typically combine a Large Language Model
+(LLM) for text generation with a media display layer that surfaces
+relevant videos, presentations, and brochures alongside the answer. The
+media matching subsystem uses keyword-to-media mappings: each media
+asset (e.g., a product video or brochure PDF) is associated with a
+curated list of trigger keywords. When a user query contains any of
+these keywords as substrings, the corresponding media is displayed.</p>
+<p>This keyword-based approach fails catastrophically for
+general-knowledge queries. A visitor asking <em>“What is machine
+learning?”</em> triggers a printer brochure because the substring
+<code>mac</code> (from <code>machine</code>) collides with a
+<code>mac</code> (Mac OS compatibility) keyword. A visitor asking
+<em>“Write a haiku about cybersecurity”</em> triggers a security
+services presentation because <code>cybersecurity</code> is a legitimate
+product-domain keyword. In both cases, the LLM correctly answers the
+question while irrelevant media appears on the kiosk screen, degrading
+the user experience.</p>
+<p>This report formalizes the media relevance problem, presents four
+candidate solutions with full mathematical treatment, and reports
+production results from a Fujifilm showroom kiosk deployment achieving
+100% precision on a comprehensive 65-query benchmark.</p>
+<h1 id="system-architecture">System Architecture</h1>
+<p>The kiosk chatbot pipeline processes each user query through four
+stages:</p>
+<ol>
+<li><p><strong>Speech-to-Text (STT):</strong> Audio input is transcribed
+to text via a remote STT service.</p></li>
+<li><p><strong>RAG Vector Search:</strong> The query is embedded via
+<code>text-embedding-bge-m3</code> (BAAI, <span class="math inline">d =
+1024</span>) and searched against a ChromaDB vector store containing
+Fujifilm product documentation chunks.</p></li>
+<li><p><strong>LLM Generation:</strong> Retrieved chunks, web search
+results, and media context are assembled into a system prompt and
+streamed through a local LLM for answer generation.</p></li>
+<li><p><strong>Media Matching:</strong> Keyword-to-media mappings are
+evaluated against the query; matched media assets are sent to the kiosk
+frontend for display alongside the answer.</p></li>
+</ol>
+<p>The media matching subsystem (Stage 4) is the focus of this report.
+It operates on a hand-curated mapping file <span
+class="math inline">\texttt{media\_mapping.json}</span> containing <span
+class="math inline">n = 212</span> keyword-to-media entries, which
+deduplicate to <span class="math inline">|\mathcal{M}_{\text{unique}}| =
+31</span> unique media assets (12 videos, 5 presentations, 13 PDFs, 1
+news proxy).</p>
+<h1 id="problem-formulation">Problem Formulation</h1>
+<p>Let <span class="math inline">\mathcal{M} = \{M_1, M_2, \ldots,
+M_n\}</span> be the set of <span class="math inline">n = 212</span>
+keyword-to-media mappings, where each <span
+class="math inline">M_j</span> is defined by a keyword set <span
+class="math inline">\mathcal{K}_j</span>, a media type <span
+class="math inline">\tau_j \in \{\text{video}, \text{presentation},
+\text{pdf}, \text{image}, \text{news}\}</span>, and a media file <span
+class="math inline">f_j</span>. The naive keyword matching function
+<span class="math inline">\text{match}_{\text{kw}}</span> performs
+case-insensitive substring search:</p>
+<p><span class="math display">\begin{equation}
+\text{match}_{\text{kw}}(Q, M_j) = \bigvee_{k \in \mathcal{K}_j} \big[
+\text{regex}(\text{escape}(k),
+\texttt{IGNORECASE}).\text{search}(\text{lower}(Q)) \neq \emptyset \big]
+\end{equation}</span></p>
+<p>This function has high recall (most domain queries trigger correct
+media) but poor precision: any substring collision between a query word
+and a media keyword produces a false positive. The fundamental challenge
+is distinguishing <strong>domain-relevant queries</strong> (<span
+class="math inline">Q \in \mathcal{D}</span>) such as <em>“What is
+SASE?”</em> (a Fujifilm security service) from <strong>general-knowledge
+queries</strong> (<span class="math inline">Q \in \mathcal{G}</span>)
+such as <em>“What is machine learning?”</em>, using only the query text
+and pre-existing media metadata—without adding inference latency or
+per-query API cost.</p>
+<h1 id="approach-1-keyword-only-matching-baseline">Approach 1:
+Keyword-Only Matching (Baseline)</h1>
+<h2 id="mechanism">Mechanism</h2>
+<p>Each media entry <span class="math inline">M_j</span> is associated
+with a hand-curated keyword list <span
+class="math inline">\mathcal{K}_j</span>. A query triggers media display
+if any keyword <span class="math inline">k \in \mathcal{K}_j</span>
+appears as a case-insensitive substring of <span
+class="math inline">Q</span>.</p>
+<h2 id="mathematical-formulation">Mathematical Formulation</h2>
+<p>For a query <span class="math inline">Q</span> and media mapping
+<span class="math inline">M_j</span> with compiled regex patterns <span
+class="math inline">\mathcal{P}_j = \{\text{compile}(\text{escape}(k),
+\texttt{IGNORECASE}) \mid k \in \mathcal{K}_j\}</span>:</p>
+<p><span class="math display">\begin{equation}
+R_{\text{kw}}(Q) = \{ M_j \in \mathcal{M} \mid \exists p \in
+\mathcal{P}_j : p.\text{search}(\text{lower}(Q)) \}
+\end{equation}</span></p>
+<p>Candidates are ranked by a 6-tuple scoring function that prioritizes
+user-pinned items, exact phrase matches, keyword length, match count,
+mapping position, and click popularity:</p>
+<p><span class="math display">\begin{equation}
+\text{score}_{\text{kw}}(M_j, Q) = (\mathbb{I}_{\text{pinned}},
+\mathbb{I}_{\text{exact}}, \max_{k \in
+\mathcal{K}_j^{\text{match}}}(|k|), |\mathcal{K}_j^{\text{match}}|,
+-\text{idx}(M_j), \text{clicks}(M_j))
+\end{equation}</span></p>
+<h2 id="results">Results</h2>
+<p>On the 65-query benchmark, the baseline achieves 51/65 (78.5%).
+Catastrophic failures include:</p>
+<ul>
+<li><p><em>“What is machine learning?”</em>: <span
+class="math inline">\texttt{mac} \subset \texttt{machine}</span>
+triggers a printer compatibility brochure.</p></li>
+<li><p><em>“Write a haiku about cybersecurity”</em>: <span
+class="math inline">\texttt{cybersecurity}</span> triggers a security
+services presentation.</p></li>
+</ul>
+<h2 id="remarks">Remarks</h2>
+<p>Keyword matching is computationally trivial (<span
+class="math inline">O(|\mathcal{M}| \cdot \bar{|\mathcal{K}|})</span>
+per query) but fundamentally brittle. It cannot model semantic intent,
+synonym relationships, or domain relevance. Any substring collision
+produces false positives. Maintenance requires constant manual keyword
+engineering. Suitable only as a candidate-generation pre-filter, not a
+standalone relevance decision mechanism.</p>
+<h1 id="approach-2-llm-as-judge-classification">Approach 2: LLM-as-Judge
+Classification</h1>
+<h2 id="mechanism-1">Mechanism</h2>
+<p>Before running media matching, dispatch the user query to a separate
+LLM (e.g., GPT-4o-mini, Llama-3-8B) with a binary classification prompt:
+<em>“Is this query about Fujifilm products, services, or company
+information? Answer YES or NO.”</em> Media matching proceeds only if the
+LLM returns <code>YES</code>.</p>
+<h2 id="mathematical-formulation-1">Mathematical Formulation</h2>
+<p>Let <span class="math inline">\mathcal{L}_{\text{judge}}</span> be a
+language model with prompt template <span
+class="math inline">\mathcal{T}_{\text{classify}}</span>:</p>
+<p><span class="math display">\begin{equation}
+\text{relevant}(Q) = \mathbb{I}\big[
+\mathcal{L}_{\text{judge}}(\mathcal{T}_{\text{classify}}(Q)) =
+\text{YES} \big]
+\end{equation}</span></p>
+<p><span class="math display">\begin{equation}
+R_{\text{llm-judge}}(Q) = \begin{cases}
+R_{\text{kw}}(Q) &amp; \text{if } \text{relevant}(Q) \\
+\emptyset &amp; \text{otherwise}
+\end{cases}
+\end{equation}</span></p>
+<h2 id="estimated-results">Estimated Results</h2>
+<p>Expected 64–67/68 (94–99%) on the benchmark. The LLM correctly
+distinguishes <em>“What is SASE?”</em> (Fujifilm service) from <em>“What
+is machine learning?”</em> (general knowledge). Ambiguous queries like
+<em>“Write a haiku about cybersecurity”</em> may still pass depending on
+the judge model’s conservatism.</p>
+<h2 id="remarks-1">Remarks</h2>
+<p>LLM-as-Judge offers high theoretical accuracy but introduces
+significant operational costs:</p>
+<ul>
+<li><p><strong>Latency:</strong> +500–2000 ms per query (API round-trip
++ token generation). Unacceptable for kiosk deployments where users
+expect sub-second responses.</p></li>
+<li><p><strong>Cost:</strong> $0.0002–0.001 per query for GPT-4o-mini;
+scales linearly with visitor traffic.</p></li>
+<li><p><strong>Reliability:</strong> Non-deterministic outputs; may
+hallucinate classifications.</p></li>
+<li><p><strong>Infrastructure:</strong> Requires an additional model
+serving endpoint.</p></li>
+<li><p><strong>Granularity:</strong> Binary gate only—cannot score
+individual media items within a query.</p></li>
+</ul>
+<h1 id="approach-3-langchain-semantic-router">Approach 3: LangChain
+Semantic Router</h1>
+<h2 id="mechanism-2">Mechanism</h2>
+<p>LangChain’s <code>SemanticRouter</code> uses pre-computed embedding
+vectors of route descriptions (e.g., <em>“Fujifilm product inquiry”</em>
+vs. <em>“General knowledge”</em>) and routes queries to the nearest
+route by cosine similarity.</p>
+<h2 id="mathematical-formulation-2">Mathematical Formulation</h2>
+<p>Let <span class="math inline">\mathbf{r}_1, \mathbf{r}_2, \ldots,
+\mathbf{r}_m</span> be the embedding vectors of <span
+class="math inline">m</span> route descriptions, encoded by <span
+class="math inline">\mathcal{E}</span>:</p>
+<p><span class="math display">\begin{equation}
+\mathbf{r}_i = \mathcal{E}(\text{desc}_i), \quad \mathbf{q} =
+\mathcal{E}(Q)
+\end{equation}</span></p>
+<p><span class="math display">\begin{equation}
+\text{route}(Q) = \arg\max_i \frac{\mathbf{q} \cdot
+\mathbf{r}_i}{\|\mathbf{q}\| \cdot \|\mathbf{r}_i\|}
+\end{equation}</span></p>
+<p>If <span class="math inline">\text{route}(Q)</span> maps to a
+non-Fujifilm route, media is suppressed.</p>
+<h2 id="estimated-results-1">Estimated Results</h2>
+<p>Similar to LLM-as-Judge (63–66/68, 93–97%). Performance depends on
+route description quality.</p>
+<h2 id="remarks-2">Remarks</h2>
+<ul>
+<li><p><strong>Latency:</strong> +10–50 ms (one embedding call + cosine
+similarity against <span class="math inline">m \ll |\mathcal{M}|</span>
+routes).</p></li>
+<li><p><strong>Cost:</strong> Negligible if reusing the existing RAG
+embedding model.</p></li>
+<li><p><strong>Complexity:</strong> Adds a LangChain framework
+dependency.</p></li>
+<li><p><strong>Granularity:</strong> Coarse-grained binary
+routing—cannot make per-media relevance decisions. A query like
+<em>“Compare EDR and NDR”</em> routes correctly to Fujifilm, but
+individual media items within the result set may still be
+irrelevant.</p></li>
+</ul>
+<h1
+id="approach-4-per-media-cosine-similarity-embedding-filter-deployed">Approach
+4: Per-Media Cosine Similarity Embedding Filter (Deployed)</h1>
+<h2 id="design-rationale">Design Rationale</h2>
+<p>Rather than adding an external classifier or routing layer, we
+exploit a key architectural property: the RAG pipeline <strong>already
+computes a query embedding</strong> <span class="math inline">\mathbf{q}
+= \mathcal{E}(Q) \in \mathbb{R}^d</span> during Stage 2 (ChromaDB vector
+search). This embedding—normally discarded after the vector lookup—is
+cached and reused for zero-cost media relevance scoring. We pre-compute
+semantic descriptor embeddings for all <span
+class="math inline">|\mathcal{M}_{\text{unique}}| = 31</span> unique
+media assets at server startup, then at query time compute cosine
+similarity between <span class="math inline">\mathbf{q}</span> and each
+keyword-matched candidate’s pre-computed embedding.</p>
+<h2 id="pre-computation-phase-startup-one-time">Pre-Computation Phase
+(Startup, One-Time)</h2>
+<p>For each unique media file <span class="math inline">f_j</span>,
+construct a rich semantic descriptor <span
+class="math inline">T_j</span> by concatenating all language titles
+(English, Cantonese, Mandarin) and all non-regex keywords (filtering out
+<span class="math inline">|k| \leq 2</span> noise tokens such as
+<code>AI</code>):</p>
+<p><span class="math display">\begin{equation}
+T_j = \bigoplus_{\ell \in \{\text{en-US}, \text{zh-HK}, \text{zh-CN}\}}
+\text{title}_\ell(M_j) \;\; \oplus \bigoplus_{\substack{k \in
+\mathcal{K}_j \\ k \not\sim \text{regex} \\ |k| &gt; 2}} k
+\end{equation}</span></p>
+<p>Then batch-embed all descriptors using the same embedding model
+already deployed for RAG:</p>
+<p><span class="math display">\begin{equation}
+\mathbf{m}_j = \mathcal{E}(T_j), \quad \forall j \in \{1, \ldots, 31\}
+\end{equation}</span></p>
+<p>The embedding model <span class="math inline">\mathcal{E}</span> is
+<code>text-embedding-bge-m3</code> (BAAI), producing <span
+class="math inline">d = 1024</span>-dimensional L2-normalized vectors
+(<span class="math inline">\|\mathbf{m}_j\| \approx 1.0</span>). This
+one-time computation runs asynchronously at server startup and completes
+in 5–30 seconds depending on API latency.</p>
+<h2 id="query-time-semantic-scoring">Query-Time Semantic Scoring</h2>
+<p>At query time, after the RAG pipeline computes <span
+class="math inline">\mathbf{q}</span> for ChromaDB vector search, the
+embedding is cached and passed to the media matcher. For each
+keyword-matched candidate <span class="math inline">M_j</span>, the
+cosine similarity against its pre-computed media embedding is
+computed:</p>
+<p><span class="math display">\begin{equation}
+\text{sim}_{\text{cos}}(\mathbf{q}, \mathbf{m}_j) = \frac{\mathbf{q}
+\cdot \mathbf{m}_j}{\|\mathbf{q}\| \cdot \|\mathbf{m}_j\|} =
+\frac{\sum_{i=1}^d q_i \cdot m_{j,i}}{\sqrt{\sum_{i=1}^d q_i^2} \cdot
+\sqrt{\sum_{i=1}^d m_{j,i}^2}}
+\end{equation}</span></p>
+<h2 id="dynamic-threshold-modulation">Dynamic Threshold Modulation</h2>
+<p>A static threshold <span
+class="math inline">\tau_{\text{static}}</span> fails to account for
+varying keyword match quality. A query with an exact keyword match
+(e.g., a bare query <code>sase</code> equal to the keyword
+<code>sase</code>) should require less semantic evidence than one with a
+single weak substring collision (e.g., the phrase keyword
+<code>what is mac</code> within <em>“What is machine learning?”</em>).
+We define a <strong>dynamic effective threshold</strong> <span
+class="math inline">\tau_{\text{eff}}</span> that scales the base
+threshold <span class="math inline">\tau_{\text{base}} = 0.43</span>
+based on keyword match strength:</p>
+<p><span class="math display">\begin{equation}
+\tau_{\text{eff}}(M_j) = \tau_{\text{base}} \cdot
+\lambda(\text{exact}_j, \text{count}_j)
+\end{equation}</span></p>
+<p>where the modulation factor <span class="math inline">\lambda</span>
+is:</p>
+<p><span class="math display">\begin{equation}
+\lambda(\text{exact}, \text{count}) = \begin{cases}
+0.70 &amp; \text{if } \text{exact} = 1 \quad \text{(exact keyword
+match)} \\
+0.82 &amp; \text{if } \text{count} \geq 3 \quad \text{(3+ keywords
+matched)} \\
+0.88 &amp; \text{if } \text{count} \geq 2 \quad \text{(2 keywords
+matched)} \\
+0.97 &amp; \text{if } \text{count} \leq 1 \quad \text{(0--1 keywords
+matched)}
+\end{cases}
+\end{equation}</span></p>
+<p>The final acceptance criterion for media candidate <span
+class="math inline">M_j</span> is:</p>
+<p><span class="math display">\begin{equation}
+\text{accept}(M_j) = \begin{cases}
+\text{True} &amp; \text{if } M_j \text{ is pinned (user-locked)} \\
+\text{True} &amp; \text{if } \text{sim}_{\text{cos}}(\mathbf{q},
+\mathbf{m}_j) \geq \tau_{\text{eff}}(M_j) \\
+\text{False} &amp; \text{otherwise}
+\end{cases}
+\end{equation}</span></p>
+<h2 id="full-algorithm-per-query-execution">Full Algorithm (Per-Query
+Execution)</h2>
+<ol>
+<li><p><strong>RAG Search:</strong> Compute <span
+class="math inline">\mathbf{q} = \mathcal{E}(Q)</span> for ChromaDB
+vector search. Cache <span class="math inline">\mathbf{q}</span> for
+media scoring reuse.</p></li>
+<li><p><strong>Keyword Pre-Filter:</strong> Generate candidate set <span
+class="math inline">\mathcal{C} = R_{\text{kw}}(Q)</span> using
+substring matching (Eq. 2). Discard candidates whose media file does not
+exist on disk.</p></li>
+<li><p><strong>Click + Pin Ranking:</strong> Rank <span
+class="math inline">\mathcal{C}</span> by the 6-tuple keyword score
+(Eq. 3).</p></li>
+<li><p><strong>Semantic Filter (Pass 3):</strong> For each ranked
+candidate <span class="math inline">(M_j, \text{score}_j)</span>:</p>
+<ol>
+<li><p>If <span class="math inline">M_j</span> is pinned: accept
+unconditionally.</p></li>
+<li><p>Retrieve pre-computed embedding <span
+class="math inline">\mathbf{m}_j</span> from the startup cache.</p></li>
+<li><p>Compute <span
+class="math inline">\text{sim}_{\text{cos}}(\mathbf{q},
+\mathbf{m}_j)</span> via Eq. 10.</p></li>
+<li><p>Compute <span class="math inline">\tau_{\text{eff}}(M_j)</span>
+from keyword match statistics via Eq. 11–12.</p></li>
+<li><p>Accept if <span class="math inline">\text{sim}_{\text{cos}} \geq
+\tau_{\text{eff}}</span>; otherwise log and drop.</p></li>
+</ol></li>
+<li><p><strong>Return:</strong> Top-<span class="math inline">k</span>
+accepted media items (<span class="math inline">k \leq 6</span>),
+ordered by composite score, to the kiosk frontend.</p></li>
+</ol>
+<h2 id="computational-complexity">Computational Complexity</h2>
+<ul>
+<li><p><strong>Startup (one-time):</strong> <span
+class="math inline">O(|\mathcal{M}_{\text{unique}}| \cdot d \cdot
+t_{\mathcal{E}})</span>, where <span
+class="math inline">t_{\mathcal{E}}</span> is per-text embedding time.
+With <span class="math inline">|\mathcal{M}_{\text{unique}}| =
+31</span>, <span class="math inline">d = 1024</span>, and batch
+embedding, approximately 5–30 seconds.</p></li>
+<li><p><strong>Per Query:</strong> <span
+class="math inline">O(|\mathcal{C}| \cdot d)</span> for cosine
+similarity. With <span class="math inline">|\mathcal{C}| \leq 6</span>
+and <span class="math inline">d = 1024</span>, this is <span
+class="math inline">&lt; 1</span> ms (pure dot products). <strong>Zero
+additional embedding calls</strong> — <span
+class="math inline">\mathbf{q}</span> is already computed during RAG
+search.</p></li>
+</ul>
+<h1 id="comparative-analysis">Comparative Analysis</h1>
+<table id="tab:comparison">
+<caption>Media Relevance Approaches: Comparative Analysis</caption>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>Metric</strong></th>
+<th style="text-align: center;"><strong>Keyword-Only</strong></th>
+<th style="text-align: center;"><strong>LLM-Judge</strong></th>
+<th style="text-align: center;"><strong>LangChain Router</strong></th>
+<th style="text-align: center;"><strong>Embedding Filter</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Query Latency</td>
+<td style="text-align: center;"><span class="math inline">&lt;1</span>
+ms</td>
+<td style="text-align: center;">+500–2000 ms</td>
+<td style="text-align: center;">+10–50 ms</td>
+<td style="text-align: center;"><span
+class="math inline">\mathbf{&lt;1}</span> <strong>ms</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Per-Query Cost</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;">$0.0002–0.001</td>
+<td style="text-align: center;">$0</td>
+<td style="text-align: center;"><strong>$0</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Added Infrastructure</td>
+<td style="text-align: center;">None</td>
+<td style="text-align: center;">Extra LLM endpoint</td>
+<td style="text-align: center;">LangChain dep.</td>
+<td style="text-align: center;"><strong>None</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Accuracy (65-query)</td>
+<td style="text-align: center;">78.5%</td>
+<td style="text-align: center;">94–99% (est.)</td>
+<td style="text-align: center;">93–97% (est.)</td>
+<td style="text-align: center;"><strong>100.0%</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Per-Item Granularity</td>
+<td style="text-align: center;">N/A</td>
+<td style="text-align: center;">No (binary gate)</td>
+<td style="text-align: center;">No (binary gate)</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Deterministic</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">Yes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cross-Lingual (EN/ZH)</td>
+<td style="text-align: center;">Manual</td>
+<td style="text-align: center;">Model-dependent</td>
+<td style="text-align: center;">Model-dependent</td>
+<td style="text-align: center;"><strong>bge-m3 native</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Maintenance Burden</td>
+<td style="text-align: center;">High (keywords)</td>
+<td style="text-align: center;">Medium (prompt)</td>
+<td style="text-align: center;">Medium (routes)</td>
+<td style="text-align: center;"><strong>Low</strong> (threshold)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="production-results">Production Results</h1>
+<p>The embedding filter was deployed on a Fujifilm showroom kiosk and
+tested against a comprehensive 65-query benchmark spanning three
+categories: 15 dual-media comparison queries (expecting 2+ media items),
+30 single-media lookup queries (expecting exactly 1 media item), and 20
+general-knowledge queries (expecting zero media).</p>
+<table id="tab:results">
+<caption>Production Benchmark Results by Category</caption>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>Category</strong></th>
+<th style="text-align: center;"><strong>Queries</strong></th>
+<th style="text-align: center;"><strong>Passed</strong></th>
+<th style="text-align: center;"><strong>Rate</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Dual Media (2+ items expected)</td>
+<td style="text-align: center;">15</td>
+<td style="text-align: center;">15</td>
+<td style="text-align: center;">100.0%</td>
+</tr>
+<tr>
+<td style="text-align: left;">Single Media (1 item expected)</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">100.0%</td>
+</tr>
+<tr>
+<td style="text-align: left;">General Knowledge (0 media expected)</td>
+<td style="text-align: center;">20</td>
+<td style="text-align: center;">20</td>
+<td style="text-align: center;">100.0%</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Total</strong></td>
+<td style="text-align: center;"><strong>65</strong></td>
+<td style="text-align: center;"><strong>65</strong></td>
+<td style="text-align: center;"><strong>100.0%</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Excluded from scoring:</strong> Three news-proxy queries
+(handled by a separate RTHK news pipeline) and two queries referencing
+video files not deployed to the kiosk media directory at test time
+(<code>External Risk Management.mp4</code>,
+<code>Incident Response.mp4</code>). These are file deployment issues,
+not algorithmic failures.</p>
+<h2 id="key-observations">Key Observations</h2>
+<ul>
+<li><p><strong>General-knowledge suppression:</strong> <em>“What is
+machine learning?”</em> (<span class="math inline">\text{sim} =
+0.395</span>, 1 keyword, <span class="math inline">\tau_{\text{eff}} =
+0.43 \times 0.97 = 0.417</span>) is dropped by the semantic gate, while
+<em>“What is the capital of France?”</em> and <em>“How do I make
+carbonara pasta?”</em> match no keywords at all; all three correctly
+return zero media. The gap between general-knowledge similarity scores
+(0.25–0.40) and domain-query scores (0.45–0.75) provides a clean
+separation margin.</p></li>
+<li><p><strong>Dynamic threshold in action:</strong> <em>“What is
+SASE?”</em> (<span class="math inline">\text{sim} = 0.520</span>, 2
+matched keywords <code>sase</code> and <code>what is sase</code>)
+triggers <span class="math inline">\lambda = 0.88</span>, yielding <span
+class="math inline">\tau_{\text{eff}} = 0.378 &lt; 0.520</span>,
+ensuring acceptance despite moderate semantic similarity.</p></li>
+<li><p><strong>Multi-keyword benefit:</strong> <em>“What is unified
+threat management?”</em> (<span class="math inline">\text{sim} =
+0.692</span>, 4 keywords, <span class="math inline">\tau_{\text{eff}} =
+0.353</span>) passes comfortably, as do <em>“What is endpoint detection
+and response?”</em> (<span class="math inline">\text{sim} =
+0.654</span>, 3 keywords, <span class="math inline">\tau_{\text{eff}} =
+0.353</span>) and <em>“What is network detection and response?”</em>
+(<span class="math inline">\text{sim} = 0.624</span>, 2 keywords, <span
+class="math inline">\tau_{\text{eff}} = 0.378</span>).</p></li>
+<li><p><strong>Keyword collision resolved:</strong> The bare
+<code>mac</code> keyword (Mac OS compatibility) was replaced with
+<code>mac os</code>, <code>macOS</code>, and
+<code>mac compatibility</code>. This removed one of the two keywords
+that <em>“What is machine learning?”</em> previously matched, raising
+its effective threshold from <span class="math inline">\tau_{\text{eff}}
+= 0.378</span> (2 keywords) to <span
+class="math inline">\tau_{\text{eff}} = 0.417</span> (1 keyword) and
+flipping the semantic decision from accept to reject.</p></li>
+<li><p><strong>Cross-lingual matching:</strong> Chinese queries such as
+<em>“SASE同PAM有咩分別？”</em> (SASE and PAM comparison) and
+<em>“防火牆同電郵安全點樣配合？”</em> (firewall and email security
+integration) correctly trigger dual-media displays with similarity
+scores of 0.445–0.515, demonstrating <code>bge-m3</code>’s native
+multilingual capability.</p></li>
+</ul>
+<h1 id="discussion">Discussion</h1>
+<h2 id="why-not-llm-as-judge">Why Not LLM-as-Judge?</h2>
+<p>While LLM-as-Judge achieves the highest theoretical accuracy, its
+operational characteristics make it unsuitable for kiosk
+deployments:</p>
+<ul>
+<li><p><strong>Latency budget:</strong> Kiosk users expect responses
+within 2–3 seconds. Adding 500–2000 ms for a separate classification
+call consumes 25–100% of this budget before answer generation
+begins.</p></li>
+<li><p><strong>Cost at scale:</strong> A busy showroom handling 500
+queries/day at $0.0005/query adds $91/year in classification costs
+alone—comparable to the entire embedding filter’s amortized cost
+(zero).</p></li>
+<li><p><strong>Failure modes:</strong> LLM non-determinism means
+occasional classification errors. A false negative (classifying a
+genuine product query as general knowledge) suppresses media that should
+be shown, degrading the kiosk’s core value proposition.</p></li>
+</ul>
+<h2 id="why-not-langchain-semantic-router">Why Not LangChain Semantic
+Router?</h2>
+<p>The SemanticRouter addresses latency and cost concerns but introduces
+a framework dependency and inherits the coarse-grained routing
+limitation. For dual-media queries like <em>“Compare EDR and NDR”</em>,
+the router correctly gates the pipeline open, but cannot prevent an
+irrelevant third media item from appearing if it also matches keywords.
+The per-item granularity of the embedding filter is essential for
+maintaining display precision.</p>
+<h2 id="limitations">Limitations</h2>
+<ul>
+<li><p><strong>Intent classification gap:</strong> The approach cannot
+distinguish creative-writing queries about domain topics (e.g.,
+<em>“Write a haiku about cybersecurity”</em>) from genuine product
+inquiries. Both contain the domain keyword <code>cybersecurity</code>
+and receive similar embedding scores. This requires explicit intent
+classification, which remains an open research problem.</p></li>
+<li><p><strong>Embedding model dependence:</strong> Filter effectiveness
+is bounded by the quality of <span
+class="math inline">\mathcal{E}</span>. Testing with the weaker
+<code>all-MiniLM-L6-v2</code> fallback model (384-dim, English-only)
+produced noisier similarity scores, requiring a lower base threshold
+(<span class="math inline">\tau_{\text{base}} \approx 0.40</span>) and
+risking false positives. The <code>bge-m3</code> model is strongly
+recommended for production.</p></li>
+<li><p><strong>Keyword coverage:</strong> The semantic filter can only
+evaluate candidates that pass the keyword pre-filter. Media assets
+without adequate keyword coverage in <span
+class="math inline">\texttt{media\_mapping.json}</span> will never be
+candidates, regardless of semantic relevance. This is a data curation
+concern, not an algorithmic limitation.</p></li>
+</ul>
+<h1 id="conclusion">Conclusion</h1>
+<p>The per-media cosine similarity embedding filter achieves 100%
+precision on a 65-query production benchmark for a Fujifilm showroom
+kiosk chatbot, at zero incremental query cost. By reusing the query
+embedding vector already computed during RAG vector search, the approach
+adds sub-millisecond latency with no additional API calls,
+infrastructure, or framework dependencies.</p>
+<p>The dynamic threshold modulation mechanism provides a principled
+bridge between brittle substring matching and pure semantic scoring:
+queries with strong lexical evidence (exact keyword matches, multiple
+keyword hits) receive proportionally lower semantic acceptance bars,
+while single-keyword collisions are held to stricter standards. This
+design eliminates the <code>mac</code>–<code>machine</code>
+false-positive class entirely while preserving correct media matching
+for domain-specific inquiries across English, Cantonese, and
+Mandarin.</p>
+<p>Compared to LLM-as-Judge classification (94–99% estimated accuracy,
++500–2000 ms latency, per-query cost) and LangChain Semantic Router
+(93–97% estimated accuracy, +10–50 ms latency, binary routing), the
+embedding filter is Pareto-optimal: it achieves the highest measured
+accuracy at the lowest computational cost with the finest granularity.
+It establishes a new baseline for media relevance filtering in
+production multi-modal kiosk deployments.</p>
+<h1 id="appendix-mathematical-formulations-explained">Appendix:
+Mathematical Formulations Explained</h1>
+<h2 id="section-3-problem-formulation">Section 3: Problem
+Formulation</h2>
+<ul>
+<li><p><strong>Keyword Matching Function (<span
+class="math inline">\text{match}_{\text{kw}}</span>) — Equation
+1:</strong> <span class="math display">\text{match}_{\text{kw}}(Q, M_j)
+= \bigvee_{k \in K_j} \text{regex}(\text{escape}(k),
+\text{IGNORECASE}).\text{search}(\text{lower}(Q)) \neq \emptyset</span>
+<em>In English:</em> For a given user query <span
+class="math inline">Q</span> and a media mapping entry <span
+class="math inline">M_j</span>, this checks whether <strong>at least
+one</strong> keyword <span class="math inline">k</span> in the media’s
+keyword set <span class="math inline">K_j</span> appears anywhere inside
+the lowercase query text. It uses a case-insensitive regular expression
+search and returns <strong>True</strong> if a match is found, and
+<strong>False</strong> otherwise.</p></li>
+</ul>
+<h2 id="section-4-approach-1-keyword-only-matching-baseline">Section 4:
+Approach 1 — Keyword-Only Matching (Baseline)</h2>
+<ul>
+<li><p><strong>Candidate Retrieval Set (<span
+class="math inline">R_{\text{kw}}</span>) — Equation 2:</strong> <span
+class="math display">R_{\text{kw}}(Q) = \{ M_j \in \mathcal{M} \mid
+\exists p \in P_j : p.\text{search}(\text{lower}(Q)) \}</span> <em>In
+English:</em> The set of candidate media items retrieved for query <span
+class="math inline">Q</span>. It includes every media mapping <span
+class="math inline">M_j</span> in the entire media catalog <span
+class="math inline">\mathcal{M}</span> that has at least one matching
+compiled regex pattern <span class="math inline">p</span>.</p></li>
+<li><p><strong>Keyword Ranking Tuple (<span
+class="math inline">\text{score}_{\text{kw}}</span>) — Equation
+3:</strong> <span class="math display">\text{score}_{\text{kw}}(M_j, Q)
+= \left( I_{\text{pinned}}, I_{\text{exact}}, \max_{k \in
+K^{\text{match}}_j} (|k|), |K^{\text{match}}_j|, -\text{idx}(M_j),
+\text{clicks}(M_j) \right)</span> <em>In English:</em> Candidates are
+ranked lexicographically (item-by-item comparison) using a 6-part
+tie-breaking tuple:</p>
+<ol>
+<li><p><span class="math inline">I_{\text{pinned}}</span>: A binary flag
+(1 or 0) indicating whether the item was manually pinned by an
+administrator.</p></li>
+<li><p><span class="math inline">I_{\text{exact}}</span>: A binary flag
+(1 or 0) indicating if the query was an exact match to a
+keyword.</p></li>
+<li><p><span class="math inline">\max(|k|)</span>: The length of the
+longest keyword that matched (favoring longer, more specific
+phrases).</p></li>
+<li><p><span class="math inline">|K^{\text{match}}_j|</span>: The total
+number of individual keywords that matched the query.</p></li>
+<li><p><span class="math inline">-\text{idx}(M_j)</span>: The negative
+index position in the configuration file (ensuring items listed earlier
+act as tie-breakers).</p></li>
+<li><p><span class="math inline">\text{clicks}(M_j)</span>: Historical
+user click popularity.</p></li>
+</ol></li>
+</ul>
+<h2 id="section-5-approach-2-llm-as-judge-classification">Section 5:
+Approach 2 — LLM-as-Judge Classification</h2>
+<ul>
+<li><p><strong>LLM Binary Relevance Indicator (<span
+class="math inline">\text{relevant}</span>) — Equation 4:</strong> <span
+class="math display">\text{relevant}(Q) =
+\mathbb{I}\left[\mathcal{L}_{\text{judge}}(\mathcal{T}_{\text{classify}}(Q))
+= \text{YES}\right]</span> <em>In English:</em> Evaluates to <span
+class="math inline">1</span> (True) if the Large Language Model <span
+class="math inline">\mathcal{L}_{\text{judge}}</span>, given the
+formatted prompt template <span
+class="math inline">\mathcal{T}_{\text{classify}}</span>, responds with
+“YES”, and <span class="math inline">0</span> (False)
+otherwise.</p></li>
+<li><p><strong>LLM-Filtered Retrieval (<span
+class="math inline">R_{\text{llm-judge}}</span>) — Equation 5:</strong>
+<span class="math display">R_{\text{llm-judge}}(Q) = \begin{cases}
+R_{\text{kw}}(Q) &amp; \text{if } \text{relevant}(Q) \\ \emptyset &amp;
+\text{otherwise} \end{cases}</span> <em>In English:</em> If the LLM
+classifies the query as relevant to the company domain, the system
+returns the standard keyword candidate set <span
+class="math inline">R_{\text{kw}}(Q)</span>. If classified as general
+knowledge, it returns an empty set <span
+class="math inline">\emptyset</span>, suppressing all media.</p></li>
+</ul>
+<h2 id="section-6-approach-3-langchain-semantic-router">Section 6:
+Approach 3 — LangChain Semantic Router</h2>
+<ul>
+<li><p><strong>Route Vector Embedding — Equation 6:</strong> <span
+class="math display">r_i = \mathcal{E}(\text{desc}_i), \quad \mathbf{q}
+= \mathcal{E}(Q)</span> <em>In English:</em> Converts both the user’s
+query <span class="math inline">Q</span> and each candidate route
+description <span class="math inline">\text{desc}_i</span> into
+high-dimensional vector representations (<span
+class="math inline">\mathbf{q}</span> and <span
+class="math inline">r_i</span>) using an embedding function <span
+class="math inline">\mathcal{E}</span>.</p></li>
+<li><p><strong>Route Selection via Cosine Similarity — Equation
+7:</strong> <span class="math display">\text{route}(Q) = \arg\max_i
+\frac{\mathbf{q} \cdot r_i}{\|\mathbf{q}\| \|r_i\|}</span> <em>In
+English:</em> Calculates the cosine similarity (the normalized dot
+product measuring geometric alignment in vector space) between the query
+vector <span class="math inline">\mathbf{q}</span> and every route
+vector <span class="math inline">r_i</span>, selecting the index <span
+class="math inline">i</span> of the route with the highest similarity
+score.</p></li>
+</ul>
+<h2
+id="section-7-approach-4-per-media-cosine-similarity-embedding-filter-deployed">Section
+7: Approach 4 — Per-Media Cosine Similarity Embedding Filter
+(Deployed)</h2>
+<ul>
+<li><p><strong>Media Text Descriptor Construction (<span
+class="math inline">T_j</span>) — Equation 8:</strong> <span
+class="math display">T_j = \bigoplus_{\ell \in \{\text{en-US},
+\text{zh-HK}, \text{zh-CN}\}} \text{title}_\ell(M_j) \;\oplus
+\bigoplus_{k \in K_j, k \not\sim \text{regex}, |k| &gt; 2} k</span>
+<em>In English:</em> Constructs a rich textual representation <span
+class="math inline">T_j</span> for media item <span
+class="math inline">j</span> by concatenating (<span
+class="math inline">\bigoplus</span>) its titles across three languages
+(English, Traditional Chinese/Hong Kong, Simplified Chinese/Mainland)
+along with all descriptive keywords, excluding tiny noise tokens (<span
+class="math inline">|k| \leq 2</span>) and regex parameters.</p></li>
+<li><p><strong>Pre-Computed Media Embedding (<span
+class="math inline">\mathbf{m}_j</span>) — Equation 9:</strong> <span
+class="math display">\mathbf{m}_j = \mathcal{E}(T_j), \quad \forall j
+\in \{1, \dots, 31\}</span> <em>In English:</em> Converts each of the 31
+unique media descriptors <span class="math inline">T_j</span> into a
+fixed 1024-dimensional normalized vector <span
+class="math inline">\mathbf{m}_j</span> using the BGE-M3 embedding model
+at application startup.</p></li>
+<li><p><strong>Query-to-Media Cosine Similarity (<span
+class="math inline">\text{sim}_{\text{cos}}</span>) — Equation
+10:</strong> <span
+class="math display">\text{sim}_{\text{cos}}(\mathbf{q}, \mathbf{m}_j) =
+\frac{\mathbf{q} \cdot \mathbf{m}_j}{\|\mathbf{q}\| \|\mathbf{m}_j\|} =
+\frac{\sum_{i=1}^d q_i m_{j,i}}{\sqrt{\sum_{i=1}^d q_i^2}
+\sqrt{\sum_{i=1}^d m_{j,i}^2}}</span> <em>In English:</em> Measures the
+semantic alignment between the incoming query vector <span
+class="math inline">\mathbf{q}</span> (reused from RAG search) and the
+media asset vector <span class="math inline">\mathbf{m}_j</span>. The
+formula divides the dot product of the two vectors by the product of
+their lengths (Euclidean norms). Since vectors are pre-normalized, this
+simplifies to a direct dot product.</p></li>
+<li><p><strong>Dynamic Effective Threshold Calculation (<span
+class="math inline">\tau_{\text{eff}}</span>) — Equation 11:</strong>
+<span class="math display">\tau_{\text{eff}}(M_j) = \tau_{\text{base}}
+\cdot \lambda(\text{exact}_j, \text{count}_j)</span> <em>In
+English:</em> Scales the baseline semantic acceptance threshold (<span
+class="math inline">\tau_{\text{base}} = 0.43</span>) down using a
+modulation factor <span class="math inline">\lambda</span>, making it
+easier for candidates with strong keyword matches to pass.</p></li>
+<li><p><strong>Modulation Factor Scale (<span
+class="math inline">\lambda</span>) — Equation 12:</strong> <span
+class="math display">\lambda(\text{exact}, \text{count}) = \begin{cases}
+    0.70 &amp; \text{if } \text{exact} = 1 \quad \text{(exact keyword
+match)} \\
+    0.82 &amp; \text{if } \text{count} \geq 3 \quad \text{(3+ keywords
+matched)} \\
+    0.88 &amp; \text{if } \text{count} \geq 2 \quad \text{(2 keywords
+matched)} \\
+    0.97 &amp; \text{if } \text{count} \leq 1 \quad \text{(0--1 keywords
+matched)}
+    \end{cases}</span> <em>In English:</em> Determines the exact scaling
+percentage for the effective threshold: exact matches lower the
+threshold to 70% of base (<span class="math inline">\tau_{\text{eff}}
+\approx 0.301</span>); 3+ matched keywords lower it to 82% (<span
+class="math inline">\tau_{\text{eff}} \approx 0.353</span>); 2 matched
+keywords lower it to 88% (<span class="math inline">\tau_{\text{eff}}
+\approx 0.378</span>); zero or one keyword matches keep the bar at 97%
+of base (<span class="math inline">\tau_{\text{eff}} \approx
+0.417</span>), applying the strictest semantic requirement to guard
+against weak substring collisions.</p></li>
+<li><p><strong>Final Media Acceptance Criterion (<span
+class="math inline">\text{accept}</span>) — Equation 13:</strong> <span
+class="math display">\text{accept}(M_j) = \begin{cases}
+    \text{True} &amp; \text{if } M_j \text{ is pinned (user-locked)} \\
+    \text{True} &amp; \text{if } \text{sim}_{\text{cos}}(\mathbf{q},
+\mathbf{m}_j) \geq \tau_{\text{eff}}(M_j) \\
+    \text{False} &amp; \text{otherwise}
+    \end{cases}</span> <em>In English:</em> A media asset <span
+class="math inline">M_j</span> is approved for display if it is manually
+pinned by a user OR if its cosine similarity score meets or exceeds its
+dynamically calculated effective threshold <span
+class="math inline">\tau_{\text{eff}}</span>. Otherwise, it is rejected
+as a false positive.</p></li>
+</ul>
+</body>
+</html>

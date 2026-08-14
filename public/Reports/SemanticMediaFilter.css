@@ -53,6 +53,22 @@ body {
 
 .back-link a:hover { background: rgba(59, 130, 246, 0.2); color: #bfdbfe; }
 
+.back-link a + a { margin-left: 8px; }
+
+.report-badge {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 4px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
 header#title-block-header {
   padding: 36px 36px 28px;
   border: 1px solid var(--border);

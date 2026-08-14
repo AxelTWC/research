@@ -326,67 +326,30 @@ a {
   background: #d1d5db;
 }
 
-/* ========== SPOTLIGHT ANIMATED BORDER ========== */
+/* ========== SPOTLIGHT CARD (STATIC SPOTLIGHT DESIGN) ========== */
 
 .spotlight-card {
   position: relative;
-  isolation: isolate;
-  border: none !important;
-}
-
-/* Animated gradient border ring */
-.spotlight-card::before {
-  content: '';
-  position: absolute;
-  inset: -1.5px;
-  border-radius: inherit;
-  z-index: -1;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgba(59, 130, 246, 0.7) 90deg,
-    rgba(168, 85, 247, 0.5) 180deg,
-    rgba(6, 182, 212, 0.5) 270deg,
-    transparent 360deg
-  );
-  animation: spotlight-border-spin 4s linear infinite;
-  will-change: transform;
-}
-
-/* Slower, wider complementary glow ring */
-.spotlight-card::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  z-index: -2;
-  background: conic-gradient(
-    from 180deg,
-    transparent 0deg,
-    rgba(168, 85, 247, 0.25) 120deg,
-    rgba(59, 130, 246, 0.25) 240deg,
-    transparent 360deg
-  );
-  animation: spotlight-border-spin-rev 6s linear infinite;
-  filter: blur(8px);
-  will-change: transform;
-}
-
-@keyframes spotlight-border-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spotlight-border-spin-rev {
-  to { transform: rotate(-360deg); }
+  border: 1px solid rgba(99, 102, 241, 0.28) !important;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(59, 130, 246, 0.16) 0%, rgba(168, 85, 247, 0.08) 45%, transparent 72%),
+    var(--c-bg-card);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 48px rgba(99, 102, 241, 0.12);
 }
 
 /* Light theme adjustments */
-[data-theme="light"] .spotlight-card::before {
-  opacity: 0.7;
-}
-
-[data-theme="light"] .spotlight-card::after {
-  opacity: 0.5;
+[data-theme="light"] .spotlight-card {
+  border-color: rgba(79, 70, 229, 0.2) !important;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(59, 130, 246, 0.1) 0%, rgba(168, 85, 247, 0.05) 45%, transparent 72%),
+    var(--c-bg-card);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 0 48px rgba(99, 102, 241, 0.08);
 }
 
 /* Theme toggle button */

@@ -18,7 +18,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 const searchIndex = [
   { id: "featured", title: "Custom Chunking & Reranking Pipeline", keywords: "Parent Child Chunking Adaptive Chunking Metadata PCC AC MD CustomAlgo Reranker BGE rerank outperform NeurIPS report Fujifilm internship", category: "Spotlight" },
-  { id: "mediafilter", title: "Kiosk Media Relevance Filter", keywords: "media relevance embedding filter kiosk chatbot cosine similarity semantic threshold modulation bge-m3 precision Fujifilm NeurIPS SASE general knowledge", category: "Archive", href: "/research/Reports/SemanticMediaFilter.html" },
+  { id: "mediafilter", title: "Kiosk Media Relevance Filter", keywords: "media relevance embedding filter kiosk chatbot cosine similarity semantic threshold modulation bge-m3 precision Fujifilm NeurIPS SASE general knowledge PDF", category: "Archive", href: "/research/Reports/SemanticMediaFilter.html" },
   { id: "papers", title: "ResearchAllRAGEngines Survey", keywords: "RAG engines comparison research survey architectures", category: "Archive", href: "/research/Reports/ResearchAllRAGEngines.html" },
   { id: "triviaqa", title: "TriviaQA RAG Benchmark", keywords: "TriviaQA benchmark evaluation RAG retrieval strategies pizza heatmap visualizations", category: "Archive", href: "/research/Reports/Triviaqa%20Rag%20Final%20Report.pdf" },
   { id: "haystack", title: "HayStack vs LightRAG", keywords: "HayStack LightRAG comparison throughput latency retrieval deployment", category: "Archive", href: "/research/Reports/HayStackVsLightRAG.pdf" },
@@ -71,9 +71,10 @@ const archiveCards = [
     icon: BrainCircuit,
     accent: 'border-teal-500/50 hover:border-teal-500 shadow-teal-500/15',
     iconBg: 'bg-teal-500/15 text-teal-400',
+    badge: 'NeurIPS Report',
     title: 'Kiosk Media Relevance Filter',
-    desc: 'Per-media cosine similarity embedding filter that reuses the RAG query vector — 100% precision on a 65-query benchmark at zero incremental cost. NeurIPS-formatted report with full math appendix.',
-    href: '/research/Reports/SemanticMediaFilter.html',
+    desc: 'Per-media cosine similarity embedding filter that reuses the RAG query vector — 100% precision on a 65-query benchmark at zero incremental cost. NeurIPS-formatted PDF with full math appendix.',
+    href: '/research/Reports/Kiosk.pdf',
   },
   {
     icon: FileText,
@@ -410,6 +411,8 @@ function App() {
               <span className="text-xs text-text-muted">·</span>
               <a href="/research/Reports/HayStackVsLightRAG.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">HayStack vs LightRAG</a>
               <span className="text-xs text-text-muted">·</span>
+              <a href="/research/Reports/Kiosk.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">Kiosk Media Filter (NeurIPS PDF)</a>
+              <span className="text-xs text-text-muted">·</span>
               <a href="/research/Reports/LLMWIkiDeepEval.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">LLM Wiki DeepEval</a>
               <span className="text-xs text-text-muted">·</span>
               <a href="/research/Reports/LLMWikiResearch.pdf" className="text-xs text-text-secondary underline transition hover:text-text-primary">LLM Wiki Research</a>
@@ -442,6 +445,11 @@ function App() {
                 <div className={`mx-auto mb-3 flex size-9 items-center justify-center rounded-lg ${card.iconBg}`}>
                   <Icon className="size-4" />
                 </div>
+                {card.badge && (
+                  <span className="mb-2 inline-block rounded-md border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-teal-400">
+                    {card.badge}
+                  </span>
+                )}
                 <h4 className="text-sm font-semibold text-text-primary">{card.title}</h4>
                 <p className="mt-1 text-xs leading-5 text-text-muted">{card.desc}</p>
               </Tag>

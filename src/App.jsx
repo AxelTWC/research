@@ -73,8 +73,9 @@ const archiveCards = [
     iconBg: 'bg-teal-500/15 text-teal-400',
     badge: 'NeurIPS Report',
     title: 'Kiosk Media Relevance Filter',
-    desc: 'Per-media cosine similarity embedding filter that reuses the RAG query vector — 100% precision on a 65-query benchmark at zero incremental cost. NeurIPS-formatted PDF with full math appendix.',
-    href: '/research/Reports/Kiosk.pdf',
+    desc: 'Per-media cosine similarity embedding filter that reuses the RAG query vector — 100% precision on a 65-query benchmark at zero incremental cost.',
+    href: '/research/Reports/SemanticMediaFilter.html',
+    pdfHref: '/research/Reports/Kiosk.pdf',
   },
   {
     icon: FileText,
@@ -452,6 +453,14 @@ function App() {
                 )}
                 <h4 className="text-sm font-semibold text-text-primary">{card.title}</h4>
                 <p className="mt-1 text-xs leading-5 text-text-muted">{card.desc}</p>
+                {card.pdfHref && (
+                  <span
+                    className="mt-2 inline-block text-xs font-medium text-teal-400 underline transition hover:text-teal-300"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(card.pdfHref, '_blank', 'noopener,noreferrer') }}
+                  >
+                    📄 View PDF
+                  </span>
+                )}
               </Tag>
             )
           })}
